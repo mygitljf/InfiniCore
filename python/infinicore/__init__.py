@@ -76,6 +76,7 @@ from infinicore.ops.block_diag import block_diag
 from infinicore.ops.broadcast_to import broadcast_to
 from infinicore.ops.cat import cat
 from infinicore.ops.cdist import cdist
+from infinicore.ops.channel_shuffle import channel_shuffle
 from infinicore.ops.conv2d import conv2d
 from infinicore.ops.cross_entropy import cross_entropy
 from infinicore.ops.diff import diff
@@ -89,6 +90,7 @@ from infinicore.ops.floor_divide import floor_divide
 from infinicore.ops.fmin import fmin
 from infinicore.ops.fmod import fmod
 from infinicore.ops.hypot import hypot
+from infinicore.ops.im2col import im2col
 from infinicore.ops.index_add import index_add
 from infinicore.ops.index_copy import index_copy
 from infinicore.ops.inner import inner
@@ -112,6 +114,7 @@ from infinicore.ops.moore_mate_flash_attn import (
     moore_mate_flash_attn_decode,
     moore_mate_flash_attn_prefill,
 )
+from infinicore.ops.moveaxis import moveaxis
 from infinicore.ops.mul import mul
 from infinicore.ops.narrow import narrow
 from infinicore.ops.nrm2 import nrm2
@@ -132,7 +135,9 @@ from infinicore.ops.sum import sum
 from infinicore.ops.swap import swap
 from infinicore.ops.take import take
 from infinicore.ops.tan import tan
+from infinicore.ops.tensor_split import tensor_split
 from infinicore.ops.topk import topk
+from infinicore.ops.unflatten import unflatten
 from infinicore.ops.unsqueeze import unsqueeze
 from infinicore.ops.vander import vander
 from infinicore.ops.var import var
@@ -199,6 +204,7 @@ __all__ = [
     "atanh",
     "binary_cross_entropy_with_logits",
     "cdist",
+    "channel_shuffle",
     "reciprocal",
     "add",
     "addr",
@@ -246,6 +252,8 @@ __all__ = [
     "rearrange",
     "cross_entropy",
     "tan",
+    "tensor_split",
+    "unflatten",
     "empty",
     "empty_like",
     "from_blob",
@@ -274,6 +282,7 @@ __all__ = [
     "paged_attention",
     "paged_attention_prefill",
     "hypot",
+    "im2col",
     "index_copy",
     "index_add",
     "take",
@@ -288,6 +297,7 @@ __all__ = [
     "var_mean",
     "moore_mate_flash_attn_prefill",
     "moore_mate_flash_attn_decode",
+    "moveaxis",
     "var",
     "topk",
     "all",
