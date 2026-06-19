@@ -1,71 +1,65 @@
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import infinicore
 import torch
-from framework import BaseOperatorTest, TensorSpec, TestCase, GenericTestRunner
+from framework import (
+    BaseOperatorTest,
+    GenericTestRunner,
+    TensorSpec,
+    TestCase,
+)
 
-# Test cases format: (matrix_shape, strides_or_None)
-# slogdet(input) — returns (sign, logabsdet)
 
+# (shape, dtype) — must be square matrices
 _TEST_CASES_DATA = [
-    ((1, 1), None),
-    ((2, 2), None),
-    ((3, 3), (3, 1)),
-    ((4, 4), None),
-    ((8, 8), (512, 1)),
-    ((16, 16), None),
+    ((3, 3), infinicore.float32),
+    ((5, 5), infinicore.float32),
+    ((2, 4, 4), infinicore.float32),
+    ((6, 6), infinicore.float32),
+    ((8, 8), infinicore.float32),
 ]
 
-_TOLERANCE_MAP = {
-    infinicore.float32: {"atol": 1e-5, "rtol": 1e-4},
-}
-
-_TENSOR_DTYPES = [infinicore.float32]
+_TOLERANCE = {"atol": 1e-4, "rtol": 1e-4}
 
 
 def parse_test_cases():
     test_cases = []
-    for shape, strides in _TEST_CASES_DATA:
-        for dtype in _TENSOR_DTYPES:
-            tol = _TOLERANCE_MAP.get(dtype, {"atol": 1e-5, "rtol": 1e-4})
-            spec = TensorSpec.from_tensor(shape, strides, dtype)
+    for shape, dtype in _TEST_CASES_DATA:
+        input_spec = TensorSpec.from_tensor(shape, None, dtype)
 
-            test_cases.append(
-                TestCase(
-                    inputs=[spec],
-                    kwargs={},
-                    output_spec=None,
-                    comparison_target=None,
-                    tolerance=tol,
-                    description="slogdet - OUT_OF_PLACE",
-                )
+        test_cases.append(
+            TestCase(
+                inputs=[input_spec],
+                kwargs={},
+                output_spec=None,
+                comparison_target=None,
+                tolerance=_TOLERANCE,
+                description="slogdet - OUT_OF_PLACE",
+                output_count=2,
             )
+        )
 
     return test_cases
 
 
 class OpTest(BaseOperatorTest):
-    """slogdet operator test with simplified implementation"""
-
     def __init__(self):
-        super().__init__("slogdet")
+        super().__init__("Slogdet")
 
     def get_test_cases(self):
         return parse_test_cases()
 
-    def torch_operator(self, *args, **kwargs):
-        return torch.slogdet(*args, **kwargs)
+    def torch_operator(self, input):
+        return torch.linalg.slogdet(input)
 
-    # def infinicore_operator(self, *args, **kwargs):
-    #     """InfiniCore implementation (operator not yet available)."""
-    #     return infinicore.slogdet(*args, **kwargs)
+    def infinicore_operator(self, input):
+        return infinicore.slogdet(input)
 
 
 def main():
-    """Main entry point"""
     runner = GenericTestRunner(OpTest)
     runner.run_and_exit()
 

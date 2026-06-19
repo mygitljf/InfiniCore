@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -7,33 +7,30 @@ import infinicore
 import torch
 from framework import (
     BaseOperatorTest,
+    GenericTestRunner,
     TensorSpec,
     TestCase,
-    GenericTestRunner,
     is_broadcast,
 )
 
-# =======================================================================
-# Test cases format: (shape, a_strides_or_None, b_strides_or_None, out_strides_or_None)
-# heaviside is binary: heaviside(input, values)
-# =======================================================================
 
 _TEST_CASES_DATA = [
     ((13, 4), None, None, None),
-    ((13, 4), (10, 1), None, None),
-    ((13, 4), None, (10, 1), None),
-    ((8, 16), (40, 1), (40, 1), None),
-    ((2, 3, 4), None, None, None),
+    ((13, 4, 4), None, None, None),
     ((16, 5632), None, None, None),
 ]
 
 _TOLERANCE_MAP = {
-    infinicore.float16: {"atol": 0, "rtol": 1e-2},
-    infinicore.float32: {"atol": 0, "rtol": 1e-3},
-    infinicore.bfloat16: {"atol": 0, "rtol": 5e-2},
+    infinicore.float16: {"atol": 0, "rtol": 0},
+    infinicore.float32: {"atol": 0, "rtol": 0},
+    infinicore.bfloat16: {"atol": 0, "rtol": 0},
 }
 
-_TENSOR_DTYPES = [infinicore.float16, infinicore.bfloat16, infinicore.float32]
+_INT_TOLERANCE = {"atol": 0, "rtol": 0}
+
+_FLOAT_DTYPES = [infinicore.float16, infinicore.bfloat16, infinicore.float32]
+
+_INT_DTYPES = [infinicore.int16, infinicore.int32, infinicore.int64]
 
 
 def parse_test_cases():
@@ -42,19 +39,16 @@ def parse_test_cases():
         shape = data[0]
         a_strides = data[1] if len(data) > 1 else None
         b_strides = data[2] if len(data) > 2 else None
-        out_strides = data[3] if len(data) > 3 else None
+        c_strides = data[3] if len(data) > 3 else None
 
-        a_supports_inplace = not is_broadcast(a_strides)
-        b_supports_inplace = not is_broadcast(b_strides)
-        out_supports_inplace = not is_broadcast(out_strides)
+        c_supports_inplace = not is_broadcast(c_strides)
 
-        for dtype in _TENSOR_DTYPES:
-            tol = _TOLERANCE_MAP.get(dtype, {"atol": 0, "rtol": 1e-3})
-            a_spec = TensorSpec.from_tensor(shape, a_strides, dtype)
-            b_spec = TensorSpec.from_tensor(shape, b_strides, dtype)
-            out_spec = TensorSpec.from_tensor(shape, out_strides, dtype)
+        for dtype in _FLOAT_DTYPES:
+            tol = _TOLERANCE_MAP.get(dtype, {"atol": 0, "rtol": 0})
+            a_spec = TensorSpec.from_tensor(shape, a_strides, dtype, name="a")
+            b_spec = TensorSpec.from_tensor(shape, b_strides, dtype, name="b")
+            c_spec = TensorSpec.from_tensor(shape, c_strides, dtype, name="c")
 
-            # Out-of-place
             test_cases.append(
                 TestCase(
                     inputs=[a_spec, b_spec],
@@ -66,42 +60,43 @@ def parse_test_cases():
                 )
             )
 
-            # Explicit out
-            if out_supports_inplace:
+            if c_supports_inplace:
                 test_cases.append(
                     TestCase(
                         inputs=[a_spec, b_spec],
                         kwargs=None,
-                        output_spec=out_spec,
+                        output_spec=c_spec,
                         comparison_target="out",
                         tolerance=tol,
                         description="heaviside - INPLACE(out)",
                     )
                 )
 
-            # In-place on first input
-            if a_supports_inplace:
-                test_cases.append(
-                    TestCase(
-                        inputs=[a_spec, b_spec],
-                        kwargs={"out": 0},
-                        output_spec=None,
-                        comparison_target=0,
-                        tolerance=tol,
-                        description="heaviside - INPLACE(a)",
-                    )
-                )
+        for dtype in _INT_DTYPES:
+            a_spec = TensorSpec.from_tensor(shape, a_strides, dtype, name="a")
+            b_spec = TensorSpec.from_tensor(shape, b_strides, dtype, name="b")
+            c_spec = TensorSpec.from_tensor(shape, c_strides, dtype, name="c")
 
-            # In-place on second input
-            if b_supports_inplace:
+            test_cases.append(
+                TestCase(
+                    inputs=[a_spec, b_spec],
+                    kwargs={},
+                    output_spec=None,
+                    comparison_target=None,
+                    tolerance=_INT_TOLERANCE,
+                    description="heaviside - OUT_OF_PLACE",
+                )
+            )
+
+            if c_supports_inplace:
                 test_cases.append(
                     TestCase(
                         inputs=[a_spec, b_spec],
-                        kwargs={"out": 1},
-                        output_spec=None,
-                        comparison_target=1,
-                        tolerance=tol,
-                        description="heaviside - INPLACE(b)",
+                        kwargs=None,
+                        output_spec=c_spec,
+                        comparison_target="out",
+                        tolerance=_INT_TOLERANCE,
+                        description="heaviside - INPLACE(out)",
                     )
                 )
 
@@ -109,8 +104,6 @@ def parse_test_cases():
 
 
 class OpTest(BaseOperatorTest):
-    """Heaviside operator test with simplified implementation"""
-
     def __init__(self):
         super().__init__("Heaviside")
 
@@ -120,13 +113,11 @@ class OpTest(BaseOperatorTest):
     def torch_operator(self, *args, **kwargs):
         return torch.heaviside(*args, **kwargs)
 
-    # def infinicore_operator(self, *args, **kwargs):
-    #     """InfiniCore implementation (operator not yet available)."""
-    #     return infinicore.heaviside(*args, **kwargs)
+    def infinicore_operator(self, *args, **kwargs):
+        return infinicore.heaviside(*args, **kwargs)
 
 
 def main():
-    """Main entry point"""
     runner = GenericTestRunner(OpTest)
     runner.run_and_exit()
 

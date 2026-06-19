@@ -87,15 +87,51 @@ class Tensor:
         )
 
     def contiguous(self):
+        if self.is_contiguous():
+            return self
         return Tensor(self._underlying.contiguous())
 
-    def as_strided(self, size, stride):
+    def as_strided(self, size, stride, storage_offset=None):
+        if storage_offset is not None:
+            return Tensor(self._underlying.as_strided(size, stride, storage_offset))
         return Tensor(self._underlying.as_strided(size, stride))
+
+    def storage_offset(self):
+        try:
+            return self._underlying.storage_offset()
+        except AttributeError:
+            return 0
+
+    def reshape(self, *shape):
+        if len(shape) == 1 and isinstance(shape[0], (list, tuple)):
+            shape = list(shape[0])
+        else:
+            shape = list(shape)
+        return self.view(shape)
+
+    def movedim(self, source, destination):
+        ndim = self._underlying.ndim
+        source = source % ndim
+        destination = destination % ndim
+        dims = list(range(ndim))
+        dims.pop(source)
+        dims.insert(destination, source)
+        result = self.permute(dims)
+        if result.is_contiguous():
+            return result
+        return result.contiguous()
+
+    def detach(self):
+        return self
 
     def permute(self, dims):
         return Tensor(self._underlying.permute(dims))
 
-    def view(self, shape):
+    def view(self, *shape):
+        if len(shape) == 1 and isinstance(shape[0], (list, tuple)):
+            shape = list(shape[0])
+        else:
+            shape = list(shape)
         return Tensor(self._underlying.view(shape))
 
     def squeeze(self, dim):
