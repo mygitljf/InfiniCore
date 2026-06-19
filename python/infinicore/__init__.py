@@ -82,6 +82,9 @@ from infinicore.ops.diff import diff
 from infinicore.ops.digamma import digamma
 from infinicore.ops.dist import dist
 from infinicore.ops.equal import equal
+from infinicore.ops.feature_alpha_dropout import feature_alpha_dropout
+from infinicore.ops.flip import flip
+from infinicore.ops.fliplr import fliplr
 from infinicore.ops.flipud import flipud
 from infinicore.ops.float_power import float_power
 from infinicore.ops.floor import floor
@@ -112,12 +115,14 @@ from infinicore.ops.moore_mate_flash_attn import (
     moore_mate_flash_attn_decode,
     moore_mate_flash_attn_prefill,
 )
+from infinicore.ops.mse_loss import mse_loss
 from infinicore.ops.mul import mul
 from infinicore.ops.narrow import narrow
 from infinicore.ops.nrm2 import nrm2
 from infinicore.ops.paged_attention import paged_attention
 from infinicore.ops.paged_attention_prefill import paged_attention_prefill
 from infinicore.ops.paged_caching import paged_caching
+from infinicore.ops.pixel_unshuffle import pixel_unshuffle
 from infinicore.ops.rearrange import rearrange
 from infinicore.ops.reciprocal import reciprocal
 from infinicore.ops.rot import rot
@@ -231,6 +236,9 @@ __all__ = [
     "logaddexp2",
     "matmul",
     "equal",
+    "feature_alpha_dropout",
+    "flip",
+    "fliplr",
     "mul",
     "diff",
     "digamma",
@@ -256,6 +264,7 @@ __all__ = [
     "mha_kvcache",
     "mha_varlen",
     "mha",
+    "mse_loss",
     "fmin",
     "floor_divide",
     "float_power",
@@ -273,6 +282,7 @@ __all__ = [
     "paged_caching",
     "paged_attention",
     "paged_attention_prefill",
+    "pixel_unshuffle",
     "hypot",
     "index_copy",
     "index_add",

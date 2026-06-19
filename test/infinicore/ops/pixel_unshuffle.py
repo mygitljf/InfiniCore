@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -7,54 +7,51 @@ import infinicore
 import torch
 from framework import (
     BaseOperatorTest,
+    GenericTestRunner,
     TensorSpec,
     TestCase,
-    GenericTestRunner,
-    is_broadcast,
 )
 
-# Test cases format: (shape, downscale_factor, input_strides_or_None)
-# infinicore.nn.functional.pixel_unshuffle(input, downscale_factor)
-
 _TEST_CASES_DATA = [
-    ((1, 4, 8, 8), 2, None),
-    ((2, 9, 6, 6), 3, (648, 72, 12, 2)),
-    ((1, 16, 4, 4), 4, None),
-    ((3, 8, 6, 6), 2, None),
-    ((2, 12, 4, 4), 2, None),
-    ((4, 27, 6, 6), 3, None),
+    # (shape, downscale_factor, strides)
+    ((1, 1, 8, 8), 2, None),
+    ((2, 3, 8, 8), 2, None),
+    ((1, 1, 9, 9), 3, None),
+    ((4, 2, 16, 16), 4, None),
+    ((2, 3, 12, 8), 2, None),
+    # strided (permuted)
+    ((2, 3, 8, 12), 2, (288, 96, 12, 1)),
 ]
 
 _TOLERANCE_MAP = {
-    infinicore.float16: {"atol": 1e-2, "rtol": 1e-2},
-    infinicore.float32: {"atol": 1e-5, "rtol": 1e-4},
-    infinicore.bfloat16: {"atol": 1e-2, "rtol": 5e-2},
+    infinicore.float16: {"atol": 0, "rtol": 0},
+    infinicore.float32: {"atol": 0, "rtol": 0},
+    infinicore.float64: {"atol": 0, "rtol": 0},
+    infinicore.int32: {"atol": 0, "rtol": 0},
 }
 
-_TENSOR_DTYPES = [infinicore.float16, infinicore.bfloat16, infinicore.float32]
+_TENSOR_DTYPES = [infinicore.float32, infinicore.float16, infinicore.float64, infinicore.int32]
 
 
 def parse_test_cases():
     test_cases = []
     for data in _TEST_CASES_DATA:
-        shape, factor = data[0], data[1]
+        shape = data[0]
+        factor = data[1]
         in_strides = data[2] if len(data) > 2 else None
 
-        supports_inplace = not is_broadcast(in_strides)
-
         for dtype in _TENSOR_DTYPES:
-            tol = _TOLERANCE_MAP.get(dtype, {"atol": 1e-5, "rtol": 1e-4})
+            tol = _TOLERANCE_MAP.get(dtype, {"atol": 0, "rtol": 0})
             in_spec = TensorSpec.from_tensor(shape, in_strides, dtype)
 
-            kwargs = {"downscale_factor": factor}
             test_cases.append(
                 TestCase(
                     inputs=[in_spec],
-                    kwargs=kwargs,
+                    kwargs={"downscale_factor": factor},
                     output_spec=None,
                     comparison_target=None,
                     tolerance=tol,
-                    description=f"pixel_unshuffle - OUT_OF_PLACE",
+                    description=f"pixel_unshuffle factor={factor} - OUT_OF_PLACE",
                 )
             )
 
@@ -62,8 +59,6 @@ def parse_test_cases():
 
 
 class OpTest(BaseOperatorTest):
-    """PixelUnshuffle operator test with simplified implementation"""
-
     def __init__(self):
         super().__init__("PixelUnshuffle")
 
@@ -73,13 +68,11 @@ class OpTest(BaseOperatorTest):
     def torch_operator(self, *args, **kwargs):
         return torch.nn.functional.pixel_unshuffle(*args, **kwargs)
 
-    # def infinicore_operator(self, *args, **kwargs):
-    #     """InfiniCore implementation (operator not yet available)."""
-    #     return infinicore.nn.functional.pixel_unshuffle(*args, **kwargs)
+    def infinicore_operator(self, *args, **kwargs):
+        return infinicore.pixel_unshuffle(*args, **kwargs)
 
 
 def main():
-    """Main entry point"""
     runner = GenericTestRunner(OpTest)
     runner.run_and_exit()
 
