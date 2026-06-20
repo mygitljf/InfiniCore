@@ -77,6 +77,7 @@ from infinicore.ops.broadcast_to import broadcast_to
 from infinicore.ops.cat import cat
 from infinicore.ops.cdist import cdist
 from infinicore.ops.conv2d import conv2d
+from infinicore.ops.copysign import copysign
 from infinicore.ops.cross_entropy import cross_entropy
 from infinicore.ops.diff import diff
 from infinicore.ops.digamma import digamma
@@ -95,8 +96,10 @@ from infinicore.ops.inner import inner
 from infinicore.ops.kron import kron
 from infinicore.ops.kthvalue import kthvalue
 from infinicore.ops.kv_caching import kv_caching
+from infinicore.ops.lcm import lcm
 from infinicore.ops.ldexp import ldexp
 from infinicore.ops.lerp import lerp
+from infinicore.ops.lgamma import lgamma
 from infinicore.ops.logaddexp import logaddexp
 from infinicore.ops.logaddexp2 import logaddexp2
 from infinicore.ops.logcumsumexp import logcumsumexp
@@ -114,10 +117,12 @@ from infinicore.ops.moore_mate_flash_attn import (
 )
 from infinicore.ops.mul import mul
 from infinicore.ops.narrow import narrow
+from infinicore.ops.nextafter import nextafter
 from infinicore.ops.nrm2 import nrm2
 from infinicore.ops.paged_attention import paged_attention
 from infinicore.ops.paged_attention_prefill import paged_attention_prefill
 from infinicore.ops.paged_caching import paged_caching
+from infinicore.ops.rad2deg import rad2deg
 from infinicore.ops.rearrange import rearrange
 from infinicore.ops.reciprocal import reciprocal
 from infinicore.ops.rot import rot
@@ -225,6 +230,7 @@ __all__ = [
     "fmod",
     "cat",
     "conv2d",
+    "copysign",
     "inner",
     "masked_select",
     "logaddexp",
@@ -238,11 +244,15 @@ __all__ = [
     "logdet",
     "narrow",
     "nrm2",
+    "lcm",
     "ldexp",
     "lerp",
+    "lgamma",
     "kthvalue",
     "squeeze",
     "unsqueeze",
+    "nextafter",
+    "rad2deg",
     "rearrange",
     "cross_entropy",
     "tan",
