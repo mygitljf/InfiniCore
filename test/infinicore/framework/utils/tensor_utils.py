@@ -34,20 +34,25 @@ def clone_torch_tensor(torch_tensor):
 def infinicore_tensor_from_torch(torch_tensor):
     infini_device = infinicore.device(torch_tensor.device.type, 0)
     if torch_tensor.is_contiguous():
-        return infinicore.from_blob(
-            torch_tensor.data_ptr(),
-            list(torch_tensor.shape),
-            dtype=to_infinicore_dtype(torch_tensor.dtype),
-            device=infini_device,
+        return infinicore.Tensor(
+            infinicore.lib._infinicore.from_blob(
+                torch_tensor.data_ptr(),
+                list(torch_tensor.shape),
+                dtype=to_infinicore_dtype(torch_tensor.dtype)._underlying,
+                device=infini_device._underlying,
+            ),
+            _torch_ref=torch_tensor,
         )
-    else:
-        return infinicore.strided_from_blob(
+    return infinicore.Tensor(
+        infinicore.lib._infinicore.strided_from_blob(
             torch_tensor.data_ptr(),
             list(torch_tensor.shape),
             list(torch_tensor.stride()),
-            dtype=to_infinicore_dtype(torch_tensor.dtype),
-            device=infini_device,
-        )
+            dtype=to_infinicore_dtype(torch_tensor.dtype)._underlying,
+            device=infini_device._underlying,
+        ),
+        _torch_ref=torch_tensor,
+    )
 
 
 def convert_infinicore_to_torch(infini_result):

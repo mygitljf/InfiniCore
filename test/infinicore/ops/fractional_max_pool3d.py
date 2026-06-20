@@ -7,9 +7,6 @@ import infinicore
 import torch
 from framework import BaseOperatorTest, TensorSpec, TestCase, GenericTestRunner
 
-# Test cases format: (in_shape, in_strides_or_None, kernel_size, output_size_or_None, return_indices)
-# Note: PyTorch fractional_max_pool3d behaves similarly to fractional_max_pool2d; we avoid _random_samples.
-
 _TEST_CASES_DATA = [
     ((2, 3, 9, 9, 9), None, (3, 3, 3), (4, 4, 4), False),
     ((1, 4, 8, 10, 12), None, (2, 3, 2), (4, 4, 6), False),
@@ -28,14 +25,29 @@ _TENSOR_DTYPES = [infinicore.float16, infinicore.float32]
 
 def parse_test_cases():
     cases = []
+    _gen = torch.Generator(device="cpu")
+    _gen.manual_seed(42)
+
     for in_shape, in_strides, kernel_size, out_size, return_indices in _TEST_CASES_DATA:
+        n_batch = 1 if len(in_shape) == 4 else in_shape[0]
+        n_channels = in_shape[-4]
+
         for dtype in _TENSOR_DTYPES:
             tol = _TOLERANCE_MAP[dtype]
+            dt_name = str(dtype).rsplit(".", 1)[-1]
+            test_dtype = getattr(torch, dt_name, torch.float32)
             in_spec = TensorSpec.from_tensor(in_shape, in_strides, dtype)
+            random_samples = torch.rand(
+                (n_batch, n_channels, 3),
+                generator=_gen,
+                dtype=test_dtype,
+                device="cpu",
+            ).cuda()
             kwargs = {
                 "kernel_size": kernel_size,
                 "output_size": out_size,
                 "return_indices": return_indices,
+                "_random_samples": random_samples,
             }
             cases.append(
                 TestCase(
@@ -52,8 +64,6 @@ def parse_test_cases():
 
 
 class OpTest(BaseOperatorTest):
-    """FractionalMaxPool3d operator test with simplified implementation"""
-
     def __init__(self):
         super().__init__("FractionalMaxPool3d")
 
@@ -63,13 +73,11 @@ class OpTest(BaseOperatorTest):
     def torch_operator(self, *args, **kwargs):
         return torch.nn.functional.fractional_max_pool3d(*args, **kwargs)
 
-    # def infinicore_operator(self, *args, **kwargs):
-    #     """InfiniCore implementation (operator not yet available)."""
-    #     return infinicore.nn.functional.fractional_max_pool3d(*args, **kwargs)
+    def infinicore_operator(self, *args, **kwargs):
+        return infinicore.fractional_max_pool3d(*args, **kwargs)
 
 
 def main():
-    """Main entry point"""
     runner = GenericTestRunner(OpTest)
     runner.run_and_exit()
 

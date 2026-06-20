@@ -88,6 +88,9 @@ from infinicore.ops.floor import floor
 from infinicore.ops.floor_divide import floor_divide
 from infinicore.ops.fmin import fmin
 from infinicore.ops.fmod import fmod
+from infinicore.ops.frac import frac
+from infinicore.ops.fractional_max_pool2d import fractional_max_pool2d
+from infinicore.ops.fractional_max_pool3d import fractional_max_pool3d
 from infinicore.ops.hypot import hypot
 from infinicore.ops.index_add import index_add
 from infinicore.ops.index_copy import index_copy
@@ -113,6 +116,7 @@ from infinicore.ops.moore_mate_flash_attn import (
     moore_mate_flash_attn_prefill,
 )
 from infinicore.ops.mul import mul
+from infinicore.ops.multilabel_margin_loss import multilabel_margin_loss
 from infinicore.ops.narrow import narrow
 from infinicore.ops.nrm2 import nrm2
 from infinicore.ops.paged_attention import paged_attention
@@ -126,6 +130,7 @@ from infinicore.ops.rotm import rotm
 from infinicore.ops.rotmg import rotmg
 from infinicore.ops.scal import scal
 from infinicore.ops.scatter import scatter
+from infinicore.ops.scatter_add import scatter_add
 from infinicore.ops.sinh import sinh
 from infinicore.ops.squeeze import squeeze
 from infinicore.ops.sum import sum
@@ -232,6 +237,7 @@ __all__ = [
     "matmul",
     "equal",
     "mul",
+    "multilabel_margin_loss",
     "diff",
     "digamma",
     "dist",
@@ -260,7 +266,11 @@ __all__ = [
     "floor_divide",
     "float_power",
     "flipud",
+    "frac",
+    "fractional_max_pool2d",
+    "fractional_max_pool3d",
     "scatter",
+    "scatter_add",
     "rot",
     "rotg",
     "rotm",
