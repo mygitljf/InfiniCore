@@ -76,7 +76,10 @@ from infinicore.ops.block_diag import block_diag
 from infinicore.ops.broadcast_to import broadcast_to
 from infinicore.ops.cat import cat
 from infinicore.ops.cdist import cdist
+from infinicore.ops.combinations import combinations
 from infinicore.ops.conv2d import conv2d
+from infinicore.ops.corrcoef import corrcoef
+from infinicore.ops.count_nonzero import count_nonzero
 from infinicore.ops.cross_entropy import cross_entropy
 from infinicore.ops.diff import diff
 from infinicore.ops.digamma import digamma
@@ -93,6 +96,7 @@ from infinicore.ops.index_add import index_add
 from infinicore.ops.index_copy import index_copy
 from infinicore.ops.inner import inner
 from infinicore.ops.kron import kron
+from infinicore.ops.kl_div import kl_div
 from infinicore.ops.kthvalue import kthvalue
 from infinicore.ops.kv_caching import kv_caching
 from infinicore.ops.ldexp import ldexp
@@ -199,6 +203,9 @@ __all__ = [
     "atanh",
     "binary_cross_entropy_with_logits",
     "cdist",
+    "combinations",
+    "corrcoef",
+    "count_nonzero",
     "reciprocal",
     "add",
     "addr",
@@ -217,6 +224,7 @@ __all__ = [
     "attention",
     "block_diag",
     "kron",
+    "kl_div",
     "bitwise_right_shift",
     "kv_caching",
     "asinh",
